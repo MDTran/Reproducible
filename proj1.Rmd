@@ -1,0 +1,81 @@
+
+========================================================
+
+Project 1
+
+Plot of daily activity
+
+```{r}
+print ("Histogram of daily activity")
+options(stringsAsFactors = FALSE)
+data <-  read.csv(file="c:/dung/datascience/reproducible/activity.csv",header=TRUE,fill=TRUE,na.strings="NA",sep=",")
+head (data)
+names (data)
+act_d<-tapply(data[,1],INDEX=data$date,FUN=sum)
+hist(act_d)
+```
+
+daily mean and median
+
+```{r fig.width=7, fig.height=6}
+print ("Daily mean and median")
+act_d_mean<-mean(act_d,na.rm=T)
+act_d_median<-median(act_d,na.rm=T)
+
+act_d_mean
+
+act_d_median
+```
+
+
+ average number of steps accross all day interval
+```{r}
+print ("Average number of steps accross all day interval")
+data[,3]<-as.factor(data[,3])
+act_i<-tapply(data[,1],INDEX=data$interval,FUN=sum, na.rm=T)/length(levels(data$interval))
+plot(act_i, type="l")
+
+```
+
+## MAX Activity interval
+```{r}
+print ("MAx Activity interval")
+act_i_max<-which.max(act_i)
+
+print (act_i_max)
+```
+
+
+Replace NA with mean and mean of all interval
+
+```{r}
+print ("replace NA with mean and new mean of all data")
+act_mean<-mean(data[,1],na.rm=T)
+for (i in 1:dim(data)[1])
+  if (is.na(data[i,1])==T) data[i,1]<-act_mean
+act_mean2<-mean(data[,1])
+
+print (act_mean2)
+
+
+```
+Interval mean of  weekend and weekday
+
+```{r}
+print ("Note: I aplorize that I have my weekend and weekdays graphs together. I have the difficulty of separate it into two graphs")
+data1<-cbind(data,weekdays(as.Date(as.character(data[,2]),format="%Y-%m-%d")))
+names(data1)[dim(data1)[2]]<-"day"
+levels(data1$day)[c(1,6)]<-"weekend"
+levels(data1$day)[c(2:6)]<-"weekday"
+act_i2<-tapply(data1[,1],INDEX=list(data1$interval,data1$day),FUN=sum)/length(levels(data$interval))
+names (act_i2)
+head (act_i2)
+library("reshape")
+act_i2<-melt(act_i2)
+head (act_i2)
+library("ggplot2")
+g<-ggplot(act_i2, aes(x=X1,value))
+
+g+ geom_line(aes(color=act_i2$X2))+ facet_grid(. ~ X2)
+
+```
